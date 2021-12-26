@@ -1,0 +1,48 @@
+---
+title: "Untitled"
+author: "Azzahra Galih"
+date: "11/28/2021"
+output: pdf_document
+---C:/Users/asus/OneDrive/Documents/dataset_clean.Rmd
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r rlib}
+library(tm) #membersihkan data
+library(vroom) #load dataset
+library(here) #menyimpan dataset
+```
+
+```{r cleaning}
+d <- vroom(here('AllProductReviews.csv'))
+review1 <- d$ReviewBody
+review2<- Corpus(VectorSource(review1))
+removeURL <- function(x) gsub("http[^[:space:]]*", "", x)
+reviewclean <- tm_map(review2, removeURL)
+removeNL <- function(y) gsub("\n", " ", y)
+reviewclean <- tm_map(reviewclean, removeNL)
+replacecomma <- function(y) gsub(",", "", y)
+reviewclean <- tm_map(reviewclean, replacecomma)
+removetitik2 <- function(y) gsub(":", "", y)
+reviewclean <- tm_map(reviewclean, removetitik2)
+removetitikkoma <- function(y) gsub(";", " ", y)
+reviewclean <- tm_map(reviewclean, removetitikkoma)
+removetitik3 <- function(y) gsub("p…", "", y)
+reviewclean <- tm_map(reviewclean, removetitik3)
+removeamp <- function(y) gsub("&amp;", "", y)
+reviewclean <- tm_map(reviewclean, removeamp)
+removeUN <- function(z) gsub("@\\w+", "", z)
+reviewclean <- tm_map(reviewclean, removeUN)
+remove.all <- function(xy) gsub("[^[:alpha:][:space:]]*", "", xy)
+reviewclean <- tm_map(reviewclean,remove.all)
+reviewclean <- tm_map(reviewclean, removePunctuation)
+reviewclean <- tm_map(reviewclean, tolower)
+hapus = readLines("hapuskata.txt")
+reviewclean <- tm_map(reviewclean,removeWords,hapus)
+
+dataframe<-data.frame(text=unlist(sapply(reviewclean, `[`)), stringsAsFactors=F)
+View(dataframe)
+write.csv(dataframe,file = 'clean_earphone.csv')
+```
